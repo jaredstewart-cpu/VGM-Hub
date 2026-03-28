@@ -1,12 +1,749 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VGM Hub</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VGM Hub — Play With Me Queue</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0e0f1a;
+  --bg2:       #151728;
+  --bg3:       #1c1f35;
+  --border:    rgba(255,255,255,0.08);
+  --border2:   rgba(255,255,255,0.15);
+  --gold:      #f5c842;
+  --gold2:     #ffd96a;
+  --gold-dim:  rgba(245,200,66,0.15);
+  --blue:      #4f8ef7;
+  --blue-dim:  rgba(79,142,247,0.15);
+  --green:     #3ecf8e;
+  --green-dim: rgba(62,207,142,0.12);
+  --red:       #f25c5c;
+  --red-dim:   rgba(242,92,92,0.12);
+  --text:      #e8eaf6;
+  --text2:     #9195b5;
+  --text3:     #5c6080;
+  --radius:    14px;
+  --radius-sm: 8px;
+}
+
+html { font-size: 16px; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+.brand-icon {
+  width: 36px; height: 36px;
+  background: var(--gold);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.brand-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+.brand-sub {
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+.tab-row {
+  display: flex; gap: 4px;
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+}
+.tab {
+  padding: 7px 18px;
+  font-size: 13px; font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  border: none; border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text2);
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.tab.active { background: var(--gold); color: #0e0f1a; }
+
+/* ── SCREENS ── */
+.screen { display: none; flex: 1; }
+.screen.active { display: flex; }
+
+/* ══════════════════════
+   VIEWER SCREEN
+══════════════════════ */
+#viewer-screen {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  min-height: calc(100vh - 60px);
+  background:
+    radial-gradient(ellipse 55% 35% at 85% 10%, rgba(245,200,66,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 10% 90%, rgba(79,142,247,0.06) 0%, transparent 60%),
+    var(--bg);
+}
+
+.viewer-card {
+  width: 100%; max-width: 440px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 2.25rem 2rem;
+  animation: popIn .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes popIn {
+  from { opacity:0; transform: translateY(20px) scale(.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+.viewer-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.viewer-icon { font-size: 40px; margin-bottom: 8px; }
+.viewer-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 26px; font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 1px;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.viewer-desc {
+  font-size: 14px; color: var(--text2);
+  line-height: 1.6;
+}
+
+.field-label {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 7px;
+}
+.viewer-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px; font-family: 'Nunito', sans-serif;
+  background: var(--bg3);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.viewer-input::placeholder { color: var(--text3); }
+.viewer-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(245,200,66,0.12);
+}
+
+.join-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px; font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  background: var(--gold);
+  color: #0e0f1a;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: opacity .15s, transform .1s;
+}
+.join-btn:hover { opacity: .88; }
+.join-btn:active { transform: scale(.98); }
+.join-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.feedback { margin-top: 16px; }
+
+.success-box {
+  background: var(--green-dim);
+  border: 1px solid rgba(62,207,142,0.25);
+  border-radius: var(--radius-sm);
+  padding: 1.5rem;
+  text-align: center;
+  animation: popIn .3s ease;
+}
+.success-pos {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 60px; font-weight: 900;
+  color: var(--green);
+  line-height: 1;
+}
+.success-pos-label {
+  font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--green); opacity: .7;
+  margin-bottom: 4px;
+}
+.success-msg {
+  font-size: 14px; color: #a8f0d1;
+  margin-top: 10px; line-height: 1.6;
+}
+.already-box {
+  background: rgba(245,200,66,0.1);
+  border: 1px solid rgba(245,200,66,0.25);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  font-size: 14px; color: var(--gold2);
+  text-align: center;
+}
+.error-box {
+  background: var(--red-dim);
+  border: 1px solid rgba(242,92,92,0.2);
+  border-radius: var(--radius-sm);
+  padding: .75rem 1rem;
+  font-size: 14px; color: var(--red);
+}
+
+/* ══════════════════════
+   DASHBOARD SCREEN
+══════════════════════ */
+#dash-screen {
+  flex-direction: column;
+  padding: 1.75rem 1.5rem;
+  max-width: 800px;
+  margin: 0 auto; width: 100%;
+  gap: 1.5rem;
+}
+
+/* Password gate */
+#pw-gate {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem 1rem;
+  min-height: calc(100vh - 60px);
+  background: var(--bg);
+}
+#pw-gate.hidden { display: none; }
+.pw-card {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 2rem;
+  width: 100%; max-width: 360px;
+  text-align: center;
+  animation: popIn .35s ease both;
+}
+.pw-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px; font-weight: 900;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.pw-sub { font-size: 13px; color: var(--text2); margin-bottom: 1.5rem; }
+.pw-input {
+  width: 100%; padding: 11px 14px;
+  font-size: 15px; font-family: 'Nunito', sans-serif;
+  background: var(--bg3);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text); outline: none;
+  margin-bottom: 12px;
+  transition: border-color .15s;
+}
+.pw-input:focus { border-color: var(--gold); }
+.pw-btn {
+  width: 100%; padding: 12px;
+  font-size: 15px; font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  background: var(--gold); color: #0e0f1a;
+  border: none; border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.pw-error { font-size: 13px; color: var(--red); margin-top: 8px; }
+
+#dash-inner { display: flex; flex-direction: column; gap: 1.5rem; }
+#dash-inner.hidden { display: none; }
+
+.dash-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+}
+.dash-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px; font-weight: 900;
+  color: var(--gold); letter-spacing: 1px;
+}
+.dash-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+  padding: 8px 16px;
+  font-size: 13px; font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  transition: background .15s, color .15s, transform .1s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+.btn:active { transform: scale(.97); }
+.btn.primary { background: var(--gold); color: #0e0f1a; border-color: transparent; }
+.btn.primary:hover { opacity: .88; background: var(--gold); }
+.btn.danger { color: var(--red); border-color: rgba(242,92,92,0.3); background: transparent; }
+.btn.danger:hover { background: var(--red-dim); }
+.btn.call { background: var(--green); color: #0e0f1a; border-color: transparent; font-size: 12px; padding: 6px 12px; }
+.btn.call:hover { opacity: .85; background: var(--green); }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.stat {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  text-align: center;
+}
+.stat-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 34px; font-weight: 900;
+  color: var(--gold);
+  line-height: 1;
+}
+.stat-lbl {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text3); margin-top: 5px;
+}
+
+.section-label {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text3); margin-bottom: 10px;
+}
+
+.queue-list {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.queue-item {
+  display: flex; align-items: center;
+  padding: 13px 16px; gap: 12px;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.queue-item:last-child { border-bottom: none; }
+.queue-item.next-up { background: rgba(245,200,66,0.05); }
+
+.pos {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px; font-weight: 900;
+  color: var(--text3); min-width: 32px; line-height: 1;
+}
+.pos.first { color: var(--gold); }
+.item-name {
+  flex: 1; font-size: 15px; font-weight: 700;
+  color: var(--text); word-break: break-all;
+}
+.item-time { font-size: 12px; color: var(--text3); white-space: nowrap; }
+.next-badge {
+  background: var(--gold); color: #0e0f1a;
+  font-size: 10px; font-weight: 800;
+  letter-spacing: .5px; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+}
+.remove-btn {
+  padding: 5px 10px; font-size: 12px; font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  border-radius: var(--radius-sm); cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent; color: var(--text3);
+  transition: color .15s, border-color .15s, background .15s;
+}
+.remove-btn:hover { color: var(--red); border-color: rgba(242,92,92,.4); background: var(--red-dim); }
+
+.empty-state {
+  padding: 3rem 1.5rem; text-align: center;
+}
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-title { font-size: 16px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; color: var(--text3); line-height: 1.6; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 10px 22px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none; z-index: 300; white-space: nowrap;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── FOOTER ── */
+.footer {
+  text-align: center; padding: 1.5rem;
+  font-size: 12px; color: var(--text3);
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+}
+.footer a { color: var(--gold); text-decoration: none; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  .topbar { padding: 0 1rem; }
+  .tab { padding: 7px 12px; font-size: 12px; }
+  .brand-name { font-size: 15px; }
+  #dash-screen { padding: 1.25rem 1rem; }
+  .stats-grid { gap: 6px; }
+  .stat-num { font-size: 26px; }
+  .stat { padding: 12px 8px; }
+}
+</style>
 </head>
 <body>
-    <h1>Welcome to VGM Hub!</h1>
-    <p>This is a hub for video game music.</p>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <div class="brand">
+    <div class="brand-icon">🎮</div>
+    <div>
+      <div class="brand-name">VGM HUB</div>
+      <div class="brand-sub">Video Game Ministries</div>
+    </div>
+  </div>
+  <div class="tab-row">
+    <button class="tab active" onclick="switchView('viewer')">Join Queue</button>
+    <button class="tab" onclick="switchView('dash')">Dashboard</button>
+  </div>
+</nav>
+
+<!-- ══ VIEWER SCREEN ══ -->
+<div id="viewer-screen" class="screen active">
+  <div class="viewer-card">
+    <div class="viewer-header">
+      <div class="viewer-icon">🕹️</div>
+      <div class="viewer-title">PLAY WITH ME</div>
+      <div class="viewer-desc">Enter your in-game username to jump in the queue. Pastor Jared will call your name when it's your turn!</div>
+    </div>
+    <div class="field-label">Your in-game username</div>
+    <input class="viewer-input" id="username-input" type="text" placeholder="e.g. ProGamer42" maxlength="30" autocomplete="off" spellcheck="false" />
+    <button class="join-btn" id="join-btn" onclick="joinQueue()">Join the Queue ✦</button>
+    <div class="feedback" id="viewer-feedback"></div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD SCREEN ══ -->
+<div id="dash-screen" class="screen">
+
+  <!-- PASSWORD GATE -->
+  <div id="pw-gate">
+    <div class="pw-card">
+      <div style="font-size:32px;margin-bottom:10px;">🔐</div>
+      <div class="pw-title">STREAMER ACCESS</div>
+      <div class="pw-sub">Enter your dashboard password to continue.</div>
+      <input class="pw-input" id="pw-input" type="password" placeholder="Password" />
+      <button class="pw-btn" onclick="checkPassword()">Unlock Dashboard</button>
+      <div class="pw-error" id="pw-error"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD CONTENT -->
+  <div id="dash-inner" class="hidden">
+
+    <div class="dash-header">
+      <div class="dash-title">QUEUE DASHBOARD</div>
+      <div class="dash-actions">
+        <button class="btn primary" onclick="callNext()">▶ Call Next</button>
+        <button class="btn danger" onclick="clearAll()">Clear All</button>
+        <button class="btn" onclick="lockDash()" style="font-size:12px;">🔒 Lock</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-num" id="stat-waiting">0</div>
+        <div class="stat-lbl">Waiting</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="stat-called">0</div>
+        <div class="stat-lbl">Called Today</div>
+      </div>
+      <div class="stat" id="stat-next-card">
+        <div class="stat-num" id="stat-next" style="font-size:18px;font-family:'Nunito',sans-serif;padding-top:6px;">—</div>
+        <div class="stat-lbl">Up Next</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Current Queue</div>
+      <div class="queue-list" id="queue-list">
+        <div class="empty-state">
+          <div class="empty-icon">🎮</div>
+          <div class="empty-title">Queue is empty!</div>
+          <div class="empty-sub">Share the "Join Queue" link with your viewers.<br>They'll appear here when they sign up.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <a href="https://videogameministries.com" target="_blank">videogameministries.com</a>
+  &nbsp;·&nbsp; Leveraging Video Games to Raise Up the Next Generation
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── CONFIG ──
+  // Change this password to whatever you want!
+  const DASHBOARD_PASSWORD = 'vgm2025';
+
+  const QUEUE_KEY  = 'vgmhub_queue_v1';
+  const CALLED_KEY = 'vgmhub_called_v1';
+  const AUTH_KEY   = 'vgmhub_auth_v1';
+
+  let queue = [];
+  let calledCount = 0;
+
+  // ── STORAGE ──
+  function load() {
+    try { queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch(e) { queue = []; }
+    try { calledCount = parseInt(localStorage.getItem(CALLED_KEY) || '0'); } catch(e) { calledCount = 0; }
+  }
+  function save() {
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+    localStorage.setItem(CALLED_KEY, String(calledCount));
+  }
+
+  // ── UTILS ──
+  function timeAgo(ts) {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return 'just now';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    return Math.floor(m / 60) + 'h ago';
+  }
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  // ── NAVIGATION ──
+  function switchView(v) {
+    document.querySelectorAll('.tab').forEach((b,i) => {
+      b.classList.toggle('active', (v==='viewer' && i===0)||(v==='dash' && i===1));
+    });
+    document.getElementById('viewer-screen').classList.toggle('active', v==='viewer');
+    document.getElementById('dash-screen').classList.toggle('active', v==='dash');
+
+    if (v === 'dash') {
+      const authed = sessionStorage.getItem(AUTH_KEY) === 'yes';
+      document.getElementById('pw-gate').classList.toggle('hidden', authed);
+      document.getElementById('dash-inner').classList.toggle('hidden', !authed);
+      if (authed) renderDash();
+    }
+  }
+
+  // ── PASSWORD ──
+  function checkPassword() {
+    const val = document.getElementById('pw-input').value;
+    if (val === DASHBOARD_PASSWORD) {
+      sessionStorage.setItem(AUTH_KEY, 'yes');
+      document.getElementById('pw-gate').classList.add('hidden');
+      document.getElementById('dash-inner').classList.remove('hidden');
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-error').textContent = '';
+      renderDash();
+    } else {
+      document.getElementById('pw-error').textContent = 'Incorrect password. Try again.';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+    }
+  }
+  function lockDash() {
+    sessionStorage.removeItem(AUTH_KEY);
+    document.getElementById('pw-gate').classList.remove('hidden');
+    document.getElementById('dash-inner').classList.add('hidden');
+    document.getElementById('pw-input').value = '';
+  }
+
+  // ── JOIN QUEUE ──
+  function joinQueue() {
+    const inp = document.getElementById('username-input');
+    const name = inp.value.trim();
+    const fb = document.getElementById('viewer-feedback');
+
+    if (!name) {
+      fb.innerHTML = '<div class="error-box">Please enter your in-game username first!</div>';
+      inp.focus(); return;
+    }
+
+    const dupe = queue.find(e => e.name.toLowerCase() === name.toLowerCase());
+    if (dupe) {
+      const pos = queue.indexOf(dupe) + 1;
+      fb.innerHTML = '<div class="already-box">You\'re already in queue at position <strong>#' + pos + '</strong>! Hang tight \u2014 Pastor Jared will call your name soon. \uD83D\uDE4C</div>';
+      return;
+    }
+
+    const entry = { id: uid(), name, ts: Date.now() };
+    queue.push(entry);
+    save();
+
+    const pos = queue.length;
+    fb.innerHTML = `
+      <div class="success-box">
+        <div class="success-pos-label">your position</div>
+        <div class="success-pos">#${pos}</div>
+        <div class="success-msg">You are in, <strong>${esc(name)}</strong>! Keep watching the stream and wait for Pastor Jared to call your name.</div>
+      </div>`;
+    inp.value = '';
+
+    const btn = document.getElementById('join-btn');
+    btn.disabled = true;
+    btn.textContent = 'You are In!';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Join the Queue ✦'; }, 5000);
+  }
+
+  // ── CALL NEXT ──
+  function callNext() {
+    if (queue.length === 0) { showToast('Queue is empty!'); return; }
+    const next = queue.shift();
+    calledCount++;
+    save();
+    showToast('🎮 Called: ' + next.name);
+    renderDash();
+  }
+
+  // ── REMOVE ──
+  function removeEntry(id) {
+    const idx = queue.findIndex(e => e.id === id);
+    if (idx === -1) return;
+    const name = queue[idx].name;
+    queue.splice(idx, 1);
+    save();
+    showToast('Removed: ' + name);
+    renderDash();
+  }
+
+  // ── CLEAR ALL ──
+  function clearAll() {
+    if (queue.length === 0) { showToast('Queue is already empty.'); return; }
+    if (!confirm('Clear the entire queue? This cannot be undone.')) return;
+    queue = [];
+    save();
+    renderDash();
+    showToast('Queue cleared.');
+  }
+
+  // ── RENDER DASHBOARD ──
+  function renderDash() {
+    document.getElementById('stat-waiting').textContent = queue.length;
+    document.getElementById('stat-called').textContent = calledCount;
+
+    const nextEl = document.getElementById('stat-next');
+    if (queue.length) {
+      const n = queue[0].name;
+      nextEl.style.fontSize = n.length > 10 ? '13px' : n.length > 7 ? '16px' : '18px';
+      nextEl.style.fontFamily = "'Nunito', sans-serif";
+      nextEl.textContent = n;
+    } else {
+      nextEl.style.fontSize = '20px';
+      nextEl.style.fontFamily = "'Orbitron', sans-serif";
+      nextEl.textContent = '—';
+    }
+
+    const list = document.getElementById('queue-list');
+    if (queue.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🎮</div>
+          <div class="empty-title">Queue is empty!</div>
+          <div class="empty-sub">Share the Join Queue link with your viewers. They will appear here when they sign up.</div>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = queue.map((e, i) => `
+      <div class="queue-item ${i === 0 ? 'next-up' : ''}">
+        <div class="pos ${i === 0 ? 'first'}">${i + 1}</div>
+        <div class="item-name">${esc(e.name)}</div>
+        <div class="item-time">${timeAgo(e.ts)}</div>
+        ${i === 0 ? '<span class="next-badge">up next</span>' : ''}
+        ${i === 0 ? `<button class="btn call" onclick="callNext()">Call ▶</button>` : ''}
+        <button class="remove-btn" onclick="removeEntry('${e.id}')">Remove</button>
+      </div>
+    `).join('');
+  }
+
+  // ── TOAST ──
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ── KEYBOARD ──
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      if (document.getElementById('viewer-screen').classList.contains('active')) joinQueue();
+      if (document.getElementById('pw-gate') && !document.getElementById('pw-gate').classList.contains('hidden')) checkPassword();
+    }
+  });
+
+  // ── AUTO REFRESH DASHBOARD ──
+  setInterval(() => {
+    load();
+    const dashActive = document.getElementById('dash-screen').classList.contains('active');
+    const dashUnlocked = !document.getElementById('dash-inner').classList.contains('hidden');
+    if (dashActive && dashUnlocked) renderDash();
+  }, 8000);
+
+  // ── INIT ──
+  load();
+</script>
 </body>
 </html>
